@@ -5,10 +5,10 @@ const remote = electron.remote;
 const startBtn = document.getElementById("startbtn");
 const ioHook = require("iohook");
 //const { remote } = require('electron')
-
 const eyeNotification = {
   title: "Blink Alert",
   body: "Look away from your screen and Blink!",
+  icon: path.join(__dirname, "../assets/images/eye.jpg"),
 };
 
 const breakNotification = {
@@ -65,13 +65,19 @@ ioHook.on("keydown", (event) => {
 
 startBtn.addEventListener("click", function (event) {
   var currentwindow = remote.getCurrentWindow();
-  currentwindow.minimize();
+  if (startBtn.innerText == "Start") {
+    currentwindow.minimize();
 
-  // Register and start hook
-  ioHook.start();
-  new window.Notification(welcomeNotification.title, welcomeNotification);
+    // Register and start hook
+    ioHook.start();
+    new window.Notification(welcomeNotification.title, welcomeNotification);
 
-  // start tracking..
-  updateActiveTime();
-  setInterval(updateActiveTime, 5000);
+    // start tracking..
+    updateActiveTime();
+    setInterval(updateActiveTime, 5000);
+
+    startBtn.innerText = "Stop";
+  } else {
+    currentwindow.close();
+  }
 });

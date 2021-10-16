@@ -5,6 +5,8 @@ const remote = electron.remote;
 const startBtn = document.getElementById("startbtn");
 const ioHook = require("iohook");
 //const { remote } = require('electron')
+let recurFn = null;
+
 const eyeNotification = {
   title: "Blink Alert",
   body: "Look away from your screen and Blink!",
@@ -41,7 +43,10 @@ function updateActiveTime() {
   console.log("active " + activeTime.value + " inactive " + inActiveTime.value);
   //ioHook.removeAllListeners(['mousemove', 'keydown']);
 
-  if (activeTime.value === 20 || activeTime.value === 40) {
+  if (
+    (activeTime.value === 20 || activeTime.value === 40) &&
+    inActiveTime.value === 0
+  ) {
     new window.Notification(eyeNotification.title, eyeNotification);
   } else if (activeTime.value === 60) {
     new window.Notification(breakNotification.title, breakNotification);
@@ -55,12 +60,17 @@ function updateActiveTime() {
 
 ioHook.on("mousemove", (event) => {
   active.state = true;
-  console.log("mosue");
+  //console.log("mosue");
 });
 
 ioHook.on("keydown", (event) => {
   active.state = true;
-  console.log("keyb");
+  //console.log("keyb");
+});
+
+ioHook.on("mousewheel", (event) => {
+  active.state = true;
+  // console.log("scroll");
 });
 
 startBtn.addEventListener("click", function (event) {
@@ -73,11 +83,17 @@ startBtn.addEventListener("click", function (event) {
     new window.Notification(welcomeNotification.title, welcomeNotification);
 
     // start tracking..
-    updateActiveTime();
-    setInterval(updateActiveTime, 5000);
+    recurFn = setInterval(updateActiveTime, 5000);
 
     startBtn.innerText = "Stop";
   } else {
-    currentwindow.close();
+    clearInterval(recurFn);
+    ioHook.removeAllListeners(["mousemove", "keydown", "mousewheel"]);
+    //currentwindow.close();
+    startBtn.innerText = "Start";
+
+    //cleanup
+    inActiveTime.value = 0;
+    activeTime.value = 0;
   }
 });
